@@ -113,46 +113,44 @@ Open **http://localhost:3100** after running `pnpm dev`.
 
 Open **http://localhost:3101** after running `pnpm dev:home`.
 
-Controls **Nest thermostats, cameras, and doorbells** via Google's [Smart Device Management API](https://developers.google.com/nest/device-access/reference/rest).
+Controls **any Google Home integrated device** — lights, switches, plugs, thermostats, fans, TVs, locks — via the [Google Assistant Embedded gRPC API](https://developers.google.com/assistant/sdk/overview). Works exactly like speaking to a Google Home speaker. No Nest devices required.
 
 ### Setup Steps
 
 **Step 1 — Google OAuth Credentials**
 
-1. [Google Cloud Console](https://console.cloud.google.com/) → select your project
-2. Enable: **Smart Device Management API** (APIs & Services → Library)
-3. **OAuth consent screen** → External → add `https://www.googleapis.com/auth/sdm.service` scope
-4. **Credentials → OAuth 2.0 Client ID** → Web application
+1. [Google Cloud Console](https://console.cloud.google.com/) → select your project (e.g. `homeassistant-436204`)
+2. Enable the **Google Assistant API**: APIs & Services → Library → search "Google Assistant API"
+3. **OAuth consent screen** → External → add your Google account as a test user
+4. Under **Scopes**, add: `https://www.googleapis.com/auth/assistant-sdk-prototype`
+5. **Credentials → Create Credentials → OAuth 2.0 Client ID** → Web application
    - Redirect URI: `http://localhost:3101/api/google/callback`
-5. Paste Client ID and Client Secret into the wizard
+6. Paste Client ID and Client Secret into the wizard
 
-**Step 2 — Sign in with Google** — grant `sdm.service` access
+**Step 2 — Sign in with Google** — grant `assistant-sdk-prototype` access
 
-**Step 3 — Device Access Project**
+**Step 3 — ngrok Token** — paste your [ngrok auth token](https://dashboard.ngrok.com/get-started/your-authtoken)
 
-1. Go to [console.nest.google.com/device-access](https://console.nest.google.com/device-access)
-2. Accept terms and create a project (enter your OAuth Client ID when prompted)
-3. Copy the **Project ID** and paste it into the wizard
+**Step 4 — Launch** — click **Start Server**
 
-> **Note:** The Device Access program may require accepting Google's terms of service at [console.nest.google.com/device-access](https://console.nest.google.com/device-access).
-
-**Step 4 — ngrok Token** — same as Google Workspace setup
-
-**Step 5 — Launch** — click **Start Server**
-
-### Available Tools (9)
+### Available Tools (7)
 
 | Tool | Description |
 |------|-------------|
-| `home_list_devices` | List all Nest devices with type, room, and current state |
-| `home_get_device` | Get full trait data for a specific device |
-| `home_list_structures` | List home structures |
-| `home_list_rooms` | List rooms in a structure |
-| `home_get_thermostat_status` | Get temperature (°F + °C), humidity, mode, HVAC status |
-| `home_set_thermostat_mode` | Set mode: `HEAT` / `COOL` / `HEATCOOL` / `OFF` |
-| `home_set_thermostat_eco` | Enable (`MANUAL_ECO`) or disable Eco mode |
-| `home_set_temperature` | Set heat/cool setpoints in °F (auto-converted to °C) |
-| `home_control_fan` | Turn fan on/off with optional duration (minutes) |
+| `home_send_command` | Send any freeform command to Google Assistant (most powerful) |
+| `home_turn_on` | Turn on a device or room |
+| `home_turn_off` | Turn off a device or room |
+| `home_set_brightness` | Set light brightness (1–100%) |
+| `home_set_color` | Change smart light color |
+| `home_set_thermostat` | Set thermostat temperature (°F or °C) |
+| `home_query` | Ask about device state (e.g. "is the bedroom light on?") |
+
+**Example commands Ditto can send:**
+- "turn on the bedroom lights"
+- "set the kitchen lights to 40%"
+- "turn off all lights"
+- "set the thermostat to 70 degrees"
+- "set the lamp to warm white"
 
 ---
 
@@ -195,9 +193,10 @@ ditto-mcp-servers/
     │   ├── src/google/       # Gmail, Calendar, Docs, Sheets, Drive clients
     │   └── src/components/   # Setup wizard + dashboard UI
     └── google-home/          # Google Home MCP server (port 3101)
+        ├── proto/            # Google Assistant Embedded gRPC proto file
         ├── src/app/api/      # MCP SSE, config, status, OAuth routes
-        ├── src/mcp/          # MCP server + 9 tool definitions
-        ├── src/google/       # SDM API client + OAuth
+        ├── src/mcp/          # MCP server + 7 tool definitions
+        ├── src/google/       # Google Assistant gRPC client + OAuth
         └── src/components/   # Setup wizard + dashboard UI
 ```
 

@@ -26,7 +26,6 @@ async function getOrCreateBearerToken(): Promise<string> {
 
 export async function GET() {
   try {
-    const config = await store.load<GoogleHomeConfig>("config.json");
     const tokens = await store.load<GoogleHomeTokens>("tokens.json");
     const state = await store.load<ServerState>("state.json");
     const bearerToken = await getOrCreateBearerToken();
@@ -37,10 +36,6 @@ export async function GET() {
       tunnelUrl: activeTunnelUrl ?? state?.ngrokUrl ?? "",
       bearerToken,
       uptime,
-      deviceAccess: {
-        projectId: config?.deviceAccess?.projectId ?? "",
-        configured: !!config?.deviceAccess?.projectId,
-      },
       google: {
         authenticated: !!tokens?.refresh_token,
         expiryDate: tokens?.expiry_date ?? 0,

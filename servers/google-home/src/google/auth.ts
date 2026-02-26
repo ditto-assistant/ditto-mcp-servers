@@ -5,8 +5,8 @@ const CONFIG_STORE = new ConfigStore("google-home");
 const TOKENS_FILE = "tokens.json";
 const CONFIG_FILE = "config.json";
 
-/** OAuth2 scope for the Smart Device Management API. */
-export const SDM_SCOPE = "https://www.googleapis.com/auth/sdm.service";
+/** OAuth2 scope for the Google Assistant Embedded SDK. */
+export const ASSISTANT_SCOPE = "https://www.googleapis.com/auth/assistant-sdk-prototype";
 
 export function getOAuth2Client(
   clientId: string,
@@ -20,7 +20,7 @@ export function generateAuthUrl(client: Auth.OAuth2Client): string {
   return client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
-    scope: [SDM_SCOPE],
+    scope: [ASSISTANT_SCOPE],
   });
 }
 

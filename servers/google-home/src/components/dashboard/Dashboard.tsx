@@ -2,17 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ConnectionStatus } from "./ConnectionStatus";
-import { DeviceAccessInfo } from "./DeviceAccessInfo";
+import { AssistantInfo } from "./AssistantInfo";
 
 export interface StatusData {
   connected: boolean;
   tunnelUrl: string;
   bearerToken: string;
   uptime: number;
-  deviceAccess: {
-    projectId: string;
-    configured: boolean;
-  };
   google: {
     authenticated: boolean;
     expiryDate: number;
@@ -24,10 +20,6 @@ const EMPTY_STATUS: StatusData = {
   tunnelUrl: "",
   bearerToken: "",
   uptime: 0,
-  deviceAccess: {
-    projectId: "",
-    configured: false,
-  },
   google: {
     authenticated: false,
     expiryDate: 0,
@@ -68,7 +60,7 @@ export function Dashboard() {
       <div>
         <h2 className="text-xl font-semibold mb-1">Dashboard</h2>
         <p className="text-sm text-muted-foreground">
-          Manage your Google Home MCP server and tunnel connection.
+          Manage your Google Home MCP server. Ditto can control any device in your Google Home.
         </p>
       </div>
 
@@ -80,11 +72,7 @@ export function Dashboard() {
         onTunnelStart={fetchStatus}
       />
 
-      <DeviceAccessInfo
-        projectId={status.deviceAccess.projectId}
-        configured={status.deviceAccess.configured}
-        googleAuthenticated={status.google.authenticated}
-      />
+      <AssistantInfo googleAuthenticated={status.google.authenticated} />
     </div>
   );
 }

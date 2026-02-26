@@ -7,11 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
 import { StepGoogleOAuth } from "./StepGoogleOAuth";
 import { StepGoogleAuth } from "./StepGoogleAuth";
-import { StepDeviceAccess } from "./StepDeviceAccess";
 import { StepNgrok } from "./StepNgrok";
 import { StepLaunch } from "./StepLaunch";
 
-const STEPS = ["Google OAuth", "Sign In", "Device Access", "ngrok", "Launch"];
+const STEPS = ["Google OAuth", "Sign In", "ngrok", "Launch"];
 
 export function SetupWizard() {
   const searchParams = useSearchParams();
@@ -52,10 +51,8 @@ export function SetupWizard() {
       case 2:
         return <StepGoogleAuth onNext={goNext} />;
       case 3:
-        return <StepDeviceAccess saveConfig={saveConfig} onNext={goNext} />;
-      case 4:
         return <StepNgrok saveConfig={saveConfig} onNext={goNext} />;
-      case 5:
+      case 4:
         return <StepLaunch />;
       default:
         return null;

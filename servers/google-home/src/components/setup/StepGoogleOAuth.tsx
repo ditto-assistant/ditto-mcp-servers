@@ -12,24 +12,28 @@ interface StepGoogleOAuthProps {
 }
 
 const INSTRUCTIONS = [
-  { step: 1, text: "Go to the Google Cloud Console and select your project (or create one)." },
+  { step: 1, text: "Go to the Google Cloud Console and select your project (homeassistant-436204 or any project)." },
   {
     step: 2,
-    text: "Enable the Smart Device Management API: APIs & Services → Library → search 'Smart Device Management API'.",
+    text: "Enable the Google Assistant API: APIs & Services → Library → search 'Google Assistant API' → Enable.",
   },
   {
     step: 3,
-    text: 'Configure the OAuth consent screen: APIs & Services → OAuth consent screen. Select "External" and add the sdm.service scope.',
+    text: 'Configure the OAuth consent screen: APIs & Services → OAuth consent screen. Select "External", fill in the app name, and add your Google account as a test user.',
   },
   {
     step: 4,
-    text: 'Create credentials: APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID → Web application.',
+    text: 'Under Scopes, click "Add or Remove Scopes" and add: https://www.googleapis.com/auth/assistant-sdk-prototype',
   },
   {
     step: 5,
-    text: "Add http://localhost:3101/api/google/callback as an authorized redirect URI.",
+    text: 'Create credentials: APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID → Desktop app (or Web application).',
   },
-  { step: 6, text: "Copy the Client ID and Client Secret below." },
+  {
+    step: 6,
+    text: "If Web application: add http://localhost:3101/api/google/callback as an authorized redirect URI.",
+  },
+  { step: 7, text: "Copy the Client ID and Client Secret below." },
 ];
 
 export function StepGoogleOAuth({ saveConfig, onNext }: StepGoogleOAuthProps) {
@@ -68,8 +72,8 @@ export function StepGoogleOAuth({ saveConfig, onNext }: StepGoogleOAuthProps) {
           <CardTitle>Google OAuth Credentials</CardTitle>
         </div>
         <CardDescription>
-          Create OAuth 2.0 credentials in the Google Cloud Console to allow access to the Smart
-          Device Management API.
+          Create OAuth 2.0 credentials in the Google Cloud Console to allow access to the Google
+          Assistant API. This enables Ditto to control any Google Home device on your account.
         </CardDescription>
       </CardHeader>
       <CardContent>

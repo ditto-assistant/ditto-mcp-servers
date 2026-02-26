@@ -9,9 +9,6 @@ export interface GoogleHomeConfig {
 		clientId: string;
 		clientSecret: string;
 	};
-	deviceAccess: {
-		projectId: string;
-	};
 	ngrok: {
 		authtoken: string;
 		domain?: string;

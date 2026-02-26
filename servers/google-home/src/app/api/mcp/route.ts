@@ -42,15 +42,7 @@ export async function GET(_req: NextRequest): Promise<Response> {
     );
   }
 
-  let mcpServer: Awaited<ReturnType<typeof createMCPServer>>;
-  try {
-    mcpServer = await createMCPServer(googleAuth);
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
-  }
+  const mcpServer = createMCPServer(googleAuth);
 
   const encoder = new TextEncoder();
   let controller: ReadableStreamDefaultController<Uint8Array>;

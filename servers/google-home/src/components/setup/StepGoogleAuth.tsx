@@ -38,8 +38,9 @@ export function StepGoogleAuth({ onNext }: StepGoogleAuthProps) {
           <CardTitle>Sign in with Google</CardTitle>
         </div>
         <CardDescription>
-          Authorize this server to access your Google Home / Nest devices via the Smart Device
-          Management API. You&apos;ll be redirected to Google&apos;s consent screen.
+          Authorize this server to send commands to Google Assistant on your behalf. You&apos;ll be
+          redirected to Google&apos;s consent screen. This gives Ditto control over any device in
+          your Google Home.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -48,7 +49,8 @@ export function StepGoogleAuth({ onNext }: StepGoogleAuthProps) {
             <p className="font-medium text-foreground mb-1">Permissions requested:</p>
             <ul className="list-disc list-inside space-y-1">
               <li>
-                <code className="text-xs">sdm.service</code> — read and control Nest devices
+                <code className="text-xs">assistant-sdk-prototype</code> — send commands to Google
+                Assistant (controls all Google Home devices)
               </li>
             </ul>
           </div>

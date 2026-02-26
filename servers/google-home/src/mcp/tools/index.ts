@@ -1,2 +1,1 @@
-export { registerDeviceTools } from "./devices";
-export { registerThermostatTools } from "./thermostat";
+export { registerHomeTools } from "./home";

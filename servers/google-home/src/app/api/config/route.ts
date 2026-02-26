@@ -9,9 +9,6 @@ const DEFAULT_CONFIG: GoogleHomeConfig = {
     clientId: "",
     clientSecret: "",
   },
-  deviceAccess: {
-    projectId: "",
-  },
   ngrok: {
     authtoken: "",
   },
@@ -41,7 +38,6 @@ export async function POST(request: Request) {
 
     const merged: GoogleHomeConfig = {
       google: { ...existing.google, ...patch.google },
-      deviceAccess: { ...existing.deviceAccess, ...patch.deviceAccess },
       ngrok: { ...existing.ngrok, ...patch.ngrok },
       server: { ...existing.server, ...patch.server },
     };

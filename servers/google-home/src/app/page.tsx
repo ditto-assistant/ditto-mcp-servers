@@ -15,7 +15,7 @@ export default function HomePage() {
         const res = await fetch("/api/config");
         if (res.ok) {
           const data = await res.json();
-          if (data?.google?.clientId && data?.deviceAccess?.projectId) {
+          if (data?.google?.clientId) {
             setReady(true);
           } else {
             router.replace("/setup");
