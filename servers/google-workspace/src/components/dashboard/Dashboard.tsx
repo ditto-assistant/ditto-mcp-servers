@@ -9,6 +9,7 @@ import { GoogleAccountInfo } from "./GoogleAccountInfo";
 export interface StatusData {
 	connected: boolean;
 	tunnelUrl: string;
+	bearerToken: string;
 	uptime: number;
 	services: {
 		gmail: boolean;
@@ -36,6 +37,7 @@ export interface ActivityEntry {
 const EMPTY_STATUS: StatusData = {
 	connected: false,
 	tunnelUrl: "",
+	bearerToken: "",
 	uptime: 0,
 	services: {
 		gmail: true,
@@ -102,6 +104,7 @@ export function Dashboard() {
 				<ConnectionStatus
 					connected={status.connected}
 					tunnelUrl={status.tunnelUrl}
+					bearerToken={status.bearerToken}
 					uptime={status.uptime}
 					onRefresh={fetchStatus}
 				/>

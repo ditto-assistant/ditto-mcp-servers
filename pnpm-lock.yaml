@@ -69,6 +69,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.0
         version: 1.27.1(zod@3.25.76)
+      '@ngrok/ngrok':
+        specifier: ^1.4.0
+        version: 1.7.0
       google-auth-library:
         specifier: ^10.6.1
         version: 10.6.1

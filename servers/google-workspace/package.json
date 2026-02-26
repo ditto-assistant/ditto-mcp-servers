@@ -14,6 +14,7 @@
     "@ditto-mcp/config": "workspace:*",
     "@ditto-mcp/tunnel": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "@ngrok/ngrok": "^1.4.0",
     "google-auth-library": "^10.6.1",
     "googleapis": "^148.0.0",
     "lucide-react": "^0.468.0",

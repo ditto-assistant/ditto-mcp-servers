@@ -2,9 +2,24 @@ import { NextRequest } from "next/server";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createMCPServer } from "@/mcp/server";
 import { getAuthenticatedClient } from "@/google/auth";
+import { createConfigStore } from "@ditto-mcp/config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const store = createConfigStore("google-workspace");
+
+interface AuthConfig {
+	bearerToken: string;
+}
+
+async function validateBearerToken(req: NextRequest): Promise<boolean> {
+	const auth = await store.load<AuthConfig>("auth.json");
+	if (!auth?.bearerToken) return true; // No token configured yet — allow through
+	const header = req.headers.get("authorization") ?? "";
+	const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+	return token === auth.bearerToken;
+}
 
 /**
  * Active SSE transports keyed by session ID.
@@ -20,6 +35,13 @@ const transports = new Map<string, SSEServerTransport>();
  * the response body.
  */
 export async function GET(_req: NextRequest): Promise<Response> {
+	if (!(await validateBearerToken(_req))) {
+		return new Response(JSON.stringify({ error: "Unauthorized" }), {
+			status: 401,
+			headers: { "Content-Type": "application/json" },
+		});
+	}
+
 	// Authenticate with Google
 	const auth = await getAuthenticatedClient();
 	if (!auth) {
@@ -108,6 +130,13 @@ export async function GET(_req: NextRequest): Promise<Response> {
  * The session ID is passed as a query parameter by the MCP client SDK.
  */
 export async function POST(req: NextRequest): Promise<Response> {
+	if (!(await validateBearerToken(req))) {
+		return new Response(JSON.stringify({ error: "Unauthorized" }), {
+			status: 401,
+			headers: { "Content-Type": "application/json" },
+		});
+	}
+
 	const sessionId = req.nextUrl.searchParams.get("sessionId");
 	if (!sessionId) {
 		return new Response(
@@ -124,12 +153,14 @@ export async function POST(req: NextRequest): Promise<Response> {
 		);
 	}
 
-	// Build a minimal request shim that SSEServerTransport.handlePostMessage expects
 	const body = await req.text();
+	const parsedBody = JSON.parse(body);
 
+	// Minimal request shim — pass parsedBody as 3rd arg to bypass getRawBody()
 	const reqShim = {
-		body: JSON.parse(body),
 		headers: Object.fromEntries(req.headers.entries()),
+		url: req.nextUrl.pathname + req.nextUrl.search,
+		socket: { encrypted: req.url.startsWith("https") },
 	};
 
 	const resShim = {
@@ -144,7 +175,11 @@ export async function POST(req: NextRequest): Promise<Response> {
 		_body: undefined as string | undefined,
 	};
 
-	await transport.handlePostMessage(reqShim as never, resShim as never);
+	await transport.handlePostMessage(
+		reqShim as never,
+		resShim as never,
+		parsedBody,
+	);
 
 	return new Response(resShim._body ?? null, {
 		status: resShim.statusCode,
