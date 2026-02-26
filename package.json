@@ -1,0 +1,21 @@
+{
+  "name": "ditto-mcp-servers",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev --filter=@ditto-mcp/google-workspace",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
