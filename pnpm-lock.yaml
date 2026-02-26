@@ -58,6 +58,64 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@22.19.12)(jiti@2.6.1)(lightningcss@1.31.1)
 
+  servers/google-home:
+    dependencies:
+      '@ditto-mcp/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ditto-mcp/tunnel':
+        specifier: workspace:*
+        version: link:../../packages/tunnel
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.12.0
+        version: 1.27.1(zod@3.25.76)
+      '@ngrok/ngrok':
+        specifier: ^1.4.0
+        version: 1.7.0
+      google-auth-library:
+        specifier: ^10.6.1
+        version: 10.6.1
+      googleapis:
+        specifier: ^148.0.0
+        version: 148.0.0
+      lucide-react:
+        specifier: ^0.468.0
+        version: 0.468.0(react@19.2.4)
+      next:
+        specifier: ^15.3.0
+        version: 15.5.12(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.4(react@19.2.4)
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.1.0
+        version: 4.2.1
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.12
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      tailwindcss:
+        specifier: ^4.1.0
+        version: 4.2.1
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@22.19.12)(jiti@2.6.1)(lightningcss@1.31.1)
+
   servers/google-workspace:
     dependencies:
       '@ditto-mcp/config':

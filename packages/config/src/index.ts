@@ -4,6 +4,31 @@ import { mkdir, readFile, writeFile, access } from "node:fs/promises";
 
 const BASE_DIR = join(homedir(), ".ditto-mcp-servers");
 
+export interface GoogleHomeConfig {
+	google: {
+		clientId: string;
+		clientSecret: string;
+	};
+	deviceAccess: {
+		projectId: string;
+	};
+	ngrok: {
+		authtoken: string;
+		domain?: string;
+	};
+	server: {
+		port: number;
+	};
+}
+
+export interface GoogleHomeTokens {
+	access_token: string;
+	refresh_token: string;
+	scope: string;
+	token_type: string;
+	expiry_date: number;
+}
+
 export interface GoogleWorkspaceConfig {
 	google: {
 		clientId: string;
