@@ -8,10 +8,6 @@ const CONFIG_FILE = "config.json";
 const store = createConfigStore("google-workspace");
 
 const DEFAULT_CONFIG: GoogleWorkspaceConfig = {
-	ditto: {
-		apiKey: "",
-		env: "prod",
-	},
 	google: {
 		clientId: "",
 		clientSecret: "",
@@ -54,7 +50,6 @@ export async function POST(request: Request) {
 			DEFAULT_CONFIG;
 
 		const merged: GoogleWorkspaceConfig = {
-			ditto: { ...existing.ditto, ...patch.ditto },
 			google: { ...existing.google, ...patch.google },
 			ngrok: { ...existing.ngrok, ...patch.ngrok },
 			services: { ...existing.services, ...patch.services },

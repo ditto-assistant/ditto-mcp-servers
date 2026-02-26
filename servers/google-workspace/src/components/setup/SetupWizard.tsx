@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
-import { StepDittoKey } from "./StepDittoKey";
 import { StepGoogleOAuth } from "./StepGoogleOAuth";
 import { StepGoogleAuth } from "./StepGoogleAuth";
 import { StepNgrok } from "./StepNgrok";
@@ -12,7 +11,6 @@ import { StepServices } from "./StepServices";
 import { StepLaunch } from "./StepLaunch";
 
 const STEPS = [
-	"Ditto Key",
 	"Google OAuth",
 	"Sign In",
 	"ngrok",
@@ -55,26 +53,22 @@ export function SetupWizard() {
 		switch (currentStep) {
 			case 1:
 				return (
-					<StepDittoKey saveConfig={saveConfig} onNext={goNext} />
-				);
-			case 2:
-				return (
 					<StepGoogleOAuth
 						saveConfig={saveConfig}
 						onNext={goNext}
 					/>
 				);
-			case 3:
+			case 2:
 				return <StepGoogleAuth onNext={goNext} />;
-			case 4:
+			case 3:
 				return (
 					<StepNgrok saveConfig={saveConfig} onNext={goNext} />
 				);
-			case 5:
+			case 4:
 				return (
 					<StepServices saveConfig={saveConfig} onNext={goNext} />
 				);
-			case 6:
+			case 5:
 				return <StepLaunch />;
 			default:
 				return null;
@@ -86,7 +80,7 @@ export function SetupWizard() {
 			<div>
 				<h2 className="text-xl font-semibold mb-1">Setup Wizard</h2>
 				<p className="text-sm text-muted-foreground">
-					Configure your Google Workspace MCP server in a few steps.
+					Configure your Google Workspace MCP server for Ditto in a few steps.
 				</p>
 			</div>
 

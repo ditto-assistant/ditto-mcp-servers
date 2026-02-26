@@ -25,20 +25,20 @@ export async function GET(request: NextRequest) {
 		if (error) {
 			console.error("Google OAuth error:", error);
 			return NextResponse.redirect(
-				new URL(`/setup?step=3&error=${encodeURIComponent(error)}`, request.url),
+				new URL(`/setup?step=2&error=${encodeURIComponent(error)}`, request.url),
 			);
 		}
 
 		if (!code) {
 			return NextResponse.redirect(
-				new URL("/setup?step=3&error=missing_code", request.url),
+				new URL("/setup?step=2&error=missing_code", request.url),
 			);
 		}
 
 		const config = await loadConfig();
 		if (!config?.google?.clientId || !config?.google?.clientSecret) {
 			return NextResponse.redirect(
-				new URL("/setup?step=3&error=missing_config", request.url),
+				new URL("/setup?step=2&error=missing_config", request.url),
 			);
 		}
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 
 		// Redirect to the next step in the setup wizard
 		return NextResponse.redirect(
-			new URL("/setup?step=4", request.url),
+			new URL("/setup?step=3", request.url),
 		);
 	} catch (error) {
 		console.error("OAuth callback failed:", error);
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 			error instanceof Error ? error.message : "unknown_error";
 		return NextResponse.redirect(
 			new URL(
-				`/setup?step=3&error=${encodeURIComponent(errorMessage)}`,
+				`/setup?step=2&error=${encodeURIComponent(errorMessage)}`,
 				request.url,
 			),
 		);

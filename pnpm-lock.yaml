@@ -63,9 +63,6 @@ importers:
       '@ditto-mcp/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@ditto-mcp/ditto-client':
-        specifier: workspace:*
-        version: link:../../packages/ditto-client
       '@ditto-mcp/tunnel':
         specifier: workspace:*
         version: link:../../packages/tunnel

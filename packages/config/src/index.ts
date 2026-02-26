@@ -5,10 +5,6 @@ import { mkdir, readFile, writeFile, access } from "node:fs/promises";
 const BASE_DIR = join(homedir(), ".ditto-mcp-servers");
 
 export interface GoogleWorkspaceConfig {
-	ditto: {
-		apiKey: string;
-		env: "prod" | "staging" | "local";
-	};
 	google: {
 		clientId: string;
 		clientSecret: string;
@@ -39,7 +35,6 @@ export interface GoogleTokens {
 
 export interface ServerState {
 	ngrokUrl?: string;
-	dittoServerId?: string;
 	lastStarted?: string;
 }
 

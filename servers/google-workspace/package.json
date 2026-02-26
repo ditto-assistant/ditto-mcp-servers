@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@ditto-mcp/config": "workspace:*",
-    "@ditto-mcp/ditto-client": "workspace:*",
     "@ditto-mcp/tunnel": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "google-auth-library": "^10.6.1",

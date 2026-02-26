@@ -58,12 +58,11 @@ pnpm dev
 
 Open **http://localhost:3100** and follow the setup wizard:
 
-1. **Ditto API Key** — Get yours from Ditto App → Settings → MCP Keys
-2. **Google OAuth** — Enter your Google Cloud OAuth client ID + secret
-3. **Google Sign-in** — Authenticate with your Google account
-4. **ngrok Token** — Paste your ngrok auth token
-5. **Services** — Choose which Google services to enable
-6. **Launch** — Start the server and copy the ngrok URL
+1. **Google OAuth** — Enter your Google Cloud OAuth client ID + secret
+2. **Google Sign-in** — Authenticate with your Google account
+3. **ngrok Token** — Paste your ngrok auth token
+4. **Services** — Choose which Google services to enable
+5. **Launch** — Start the server and copy the ngrok URL
 
 Then register the ngrok URL in Ditto App → Settings → MCP Servers → Add Server (SSE transport).
 
