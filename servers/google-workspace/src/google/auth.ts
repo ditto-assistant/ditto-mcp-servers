@@ -15,6 +15,7 @@ export const GOOGLE_SCOPES = {
 	docs: ["https://www.googleapis.com/auth/documents"],
 	sheets: ["https://www.googleapis.com/auth/spreadsheets"],
 	drive: ["https://www.googleapis.com/auth/drive"],
+	home: ["https://www.googleapis.com/auth/assistant-sdk-prototype"],
 } as const;
 
 /**
@@ -132,5 +133,6 @@ export function getScopesForServices(
 	if (services.docs) scopes.push(...GOOGLE_SCOPES.docs);
 	if (services.sheets) scopes.push(...GOOGLE_SCOPES.sheets);
 	if (services.drive) scopes.push(...GOOGLE_SCOPES.drive);
+	if (services.home) scopes.push(...GOOGLE_SCOPES.home);
 	return [...new Set(scopes)];
 }

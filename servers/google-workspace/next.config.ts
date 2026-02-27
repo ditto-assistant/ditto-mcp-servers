@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
 		"@ngrok/ngrok-darwin-arm64",
 		"@ngrok/ngrok-linux-x64-gnu",
 		"@ngrok/ngrok-win32-x64-msvc",
+		"@grpc/grpc-js",
+		"@grpc/proto-loader",
 	],
 };
 

@@ -21,6 +21,7 @@ const DEFAULT_CONFIG: GoogleWorkspaceConfig = {
 		docs: true,
 		sheets: true,
 		drive: true,
+		home: true,
 	},
 	server: {
 		port: 3100,

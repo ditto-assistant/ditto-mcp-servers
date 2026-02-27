@@ -49,6 +49,7 @@ export async function GET() {
 				docs: true,
 				sheets: true,
 				drive: true,
+				home: true,
 			},
 			google: {
 				authenticated: !!tokens?.refresh_token,

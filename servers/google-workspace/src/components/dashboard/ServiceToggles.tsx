@@ -7,6 +7,7 @@ import {
 	FileText,
 	Table2,
 	HardDrive,
+	Home,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ interface ServiceTogglesProps {
 		docs: boolean;
 		sheets: boolean;
 		drive: boolean;
+		home: boolean;
 	};
 }
 
@@ -40,6 +42,7 @@ const SERVICE_DEFS: ServiceDef[] = [
 	{ key: "docs", label: "Docs", toolCount: 4, icon: FileText },
 	{ key: "sheets", label: "Sheets", toolCount: 4, icon: Table2 },
 	{ key: "drive", label: "Drive", toolCount: 4, icon: HardDrive },
+	{ key: "home", label: "Google Home", toolCount: 7, icon: Home },
 ];
 
 export function ServiceToggles({ services }: ServiceTogglesProps) {

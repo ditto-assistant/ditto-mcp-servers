@@ -1,1 +1,0 @@
-export { registerHomeTools } from "./home";

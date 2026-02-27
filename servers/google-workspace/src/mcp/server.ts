@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Auth } from "googleapis";
+import type { GoogleWorkspaceConfig } from "@ditto-mcp/config";
 import { GmailService } from "@/google/gmail";
 import { CalendarService } from "@/google/calendar";
 import { DocsService } from "@/google/docs";
@@ -10,18 +11,20 @@ import { registerCalendarTools } from "@/mcp/tools/calendar";
 import { registerDocsTools } from "@/mcp/tools/docs";
 import { registerSheetsTools } from "@/mcp/tools/sheets";
 import { registerDriveTools } from "@/mcp/tools/drive";
+import { registerHomeTools } from "@/mcp/tools/home";
 
 /**
- * Create and configure the MCP server with all Google Workspace tools.
+ * Create and configure the MCP server with all enabled tools.
  *
- * The `googleAuth` parameter is an authenticated OAuth2 client that will be
- * used to initialise each Google service. Service instances are created lazily
- * on first tool invocation so that the server can be built before any API call
- * is made.
+ * Covers Google Workspace (Gmail, Calendar, Docs, Sheets, Drive) and
+ * Google Home (Assistant gRPC commands) in a single server.
  */
-export function createMCPServer(googleAuth: Auth.OAuth2Client): McpServer {
+export function createMCPServer(
+	googleAuth: Auth.OAuth2Client,
+	services: GoogleWorkspaceConfig["services"],
+): McpServer {
 	const server = new McpServer({
-		name: "ditto-google-workspace",
+		name: "ditto-google",
 		version: "1.0.0",
 	});
 
@@ -57,12 +60,12 @@ export function createMCPServer(googleAuth: Auth.OAuth2Client): McpServer {
 		return driveService;
 	};
 
-	// Register all 22 tools across the 5 Google Workspace services
-	registerGmailTools(server, getGmail);
-	registerCalendarTools(server, getCalendar);
-	registerDocsTools(server, getDocs);
-	registerSheetsTools(server, getSheets);
-	registerDriveTools(server, getDrive);
+	if (services.gmail) registerGmailTools(server, getGmail);
+	if (services.calendar) registerCalendarTools(server, getCalendar);
+	if (services.docs) registerDocsTools(server, getDocs);
+	if (services.sheets) registerSheetsTools(server, getSheets);
+	if (services.drive) registerDriveTools(server, getDrive);
+	if (services.home) registerHomeTools(server, () => googleAuth);
 
 	return server;
 }

@@ -3,8 +3,6 @@
   "private": true,
   "scripts": {
     "dev": "turbo dev --filter=@ditto-mcp/google-workspace",
-    "dev:home": "turbo dev --filter=@ditto-mcp/google-home",
-    "dev:all": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
