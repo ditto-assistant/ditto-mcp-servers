@@ -6,6 +6,7 @@ import { sendAssistantCommand } from "@/google/assistant";
 export function registerHomeTools(
   server: McpServer,
   getAuth: () => Auth.OAuth2Client,
+  oauthClientId?: string,
 ): void {
   /**
    * Primary power tool — send any freeform command to Google Assistant.
@@ -24,7 +25,7 @@ export function registerHomeTools(
     },
     async ({ command }) => {
       try {
-        const result = await sendAssistantCommand(getAuth(), command);
+        const result = await sendAssistantCommand(getAuth(), command, oauthClientId);
         const text = result.response
           ? `✓ ${result.response}`
           : `✓ Command sent: "${command}"`;
@@ -58,6 +59,7 @@ export function registerHomeTools(
         const result = await sendAssistantCommand(
           getAuth(),
           `turn on the ${device}`,
+          oauthClientId,
         );
         const text = result.response || `Turned on ${device}.`;
         return { content: [{ type: "text" as const, text }] };
@@ -90,6 +92,7 @@ export function registerHomeTools(
         const result = await sendAssistantCommand(
           getAuth(),
           `turn off the ${device}`,
+          oauthClientId,
         );
         const text = result.response || `Turned off ${device}.`;
         return { content: [{ type: "text" as const, text }] };
@@ -125,6 +128,7 @@ export function registerHomeTools(
         const result = await sendAssistantCommand(
           getAuth(),
           `set the ${device} to ${percent} percent`,
+          oauthClientId,
         );
         const text = result.response || `Set ${device} brightness to ${percent}%.`;
         return { content: [{ type: "text" as const, text }] };
@@ -160,6 +164,7 @@ export function registerHomeTools(
         const result = await sendAssistantCommand(
           getAuth(),
           `set the ${device} to ${color}`,
+          oauthClientId,
         );
         const text = result.response || `Changed ${device} color to ${color}.`;
         return { content: [{ type: "text" as const, text }] };
@@ -195,6 +200,7 @@ export function registerHomeTools(
         const result = await sendAssistantCommand(
           getAuth(),
           `set the thermostat to ${temperature} ${unitWord}`,
+          oauthClientId,
         );
         const text =
           result.response || `Thermostat set to ${temperature}°${unit}.`;
@@ -225,7 +231,7 @@ export function registerHomeTools(
     },
     async ({ query }) => {
       try {
-        const result = await sendAssistantCommand(getAuth(), query);
+        const result = await sendAssistantCommand(getAuth(), query, oauthClientId);
         const text = result.response || "No response from Google Assistant.";
         return { content: [{ type: "text" as const, text }] };
       } catch (err) {

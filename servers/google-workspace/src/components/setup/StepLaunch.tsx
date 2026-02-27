@@ -26,6 +26,8 @@ export function StepLaunch() {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [copied, setCopied] = useState(false);
 
+	const mcpUrl = tunnelUrl ? `${tunnelUrl}/api/mcp` : "";
+
 	const handleStart = async () => {
 		setStatus("starting");
 		setErrorMessage("");
@@ -49,7 +51,7 @@ export function StepLaunch() {
 	};
 
 	const handleCopy = async () => {
-		const success = await copyToClipboard(tunnelUrl);
+		const success = await copyToClipboard(mcpUrl);
 		if (success) {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
@@ -125,25 +127,28 @@ export function StepLaunch() {
 								</span>
 							</div>
 
-							{/* Tunnel URL */}
-							{tunnelUrl && (
-								<div className="flex items-center gap-2">
-									<div className="flex-1 rounded-md border border-border bg-background px-3 py-2">
-										<code className="text-sm text-accent font-mono">
-											{tunnelUrl}
-										</code>
+							{/* MCP URL */}
+							{mcpUrl && (
+								<div className="flex flex-col gap-1">
+									<p className="text-xs text-muted-foreground">MCP endpoint for Ditto:</p>
+									<div className="flex items-center gap-2">
+										<div className="flex-1 rounded-md border border-border bg-background px-3 py-2">
+											<code className="text-sm text-accent font-mono">
+												{mcpUrl}
+											</code>
+										</div>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={handleCopy}
+										>
+											{copied ? (
+												<Check className="h-3.5 w-3.5 text-success" />
+											) : (
+												<Copy className="h-3.5 w-3.5" />
+											)}
+										</Button>
 									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={handleCopy}
-									>
-										{copied ? (
-											<Check className="h-3.5 w-3.5 text-success" />
-										) : (
-											<Copy className="h-3.5 w-3.5" />
-										)}
-									</Button>
 								</div>
 							)}
 
@@ -154,9 +159,7 @@ export function StepLaunch() {
 								</p>
 								<ol className="flex flex-col gap-2 text-sm text-muted-foreground">
 									<li className="flex gap-2">
-										<span className="text-foreground font-medium">
-											1.
-										</span>
+										<span className="text-foreground font-medium">1.</span>
 										Open{" "}
 										<a
 											href="https://heyditto.ai"
@@ -168,55 +171,39 @@ export function StepLaunch() {
 										</a>
 									</li>
 									<li className="flex gap-2">
-										<span className="text-foreground font-medium">
-											2.
-										</span>
+										<span className="text-foreground font-medium">2.</span>
 										Go to Settings &rarr; MCP Servers
 									</li>
 									<li className="flex gap-2">
-										<span className="text-foreground font-medium">
-											3.
-										</span>
-										Click &quot;Add Server&quot;
+										<span className="text-foreground font-medium">3.</span>
+										Click &quot;Add Server&quot; and paste the MCP endpoint URL above
 									</li>
 									<li className="flex gap-2">
-										<span className="text-foreground font-medium">
-											4.
-										</span>
-										<span>
-											Paste this URL:{" "}
-											<code className="rounded bg-background px-1.5 py-0.5 text-xs font-mono text-accent">
-												{tunnelUrl}
-											</code>
-										</span>
+										<span className="text-foreground font-medium">4.</span>
+										Copy the bearer token from the Dashboard and set Auth to Bearer
 									</li>
 									<li className="flex gap-2">
-										<span className="text-foreground font-medium">
-											5.
-										</span>
-										Set transport to SSE
-									</li>
-									<li className="flex gap-2">
-										<span className="text-foreground font-medium">
-											6.
-										</span>
+										<span className="text-foreground font-medium">5.</span>
 										Enable the server
 									</li>
 								</ol>
 							</div>
 
-							{/* Open Ditto link */}
-							<div className="flex justify-end">
+							{/* Action buttons */}
+							<div className="flex items-center justify-between">
 								<a
 									href="https://heyditto.ai"
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<Button variant="secondary">
+									<Button variant="outline" size="sm">
 										Open Ditto App
 										<ExternalLink className="h-3.5 w-3.5" />
 									</Button>
 								</a>
+								<Button onClick={() => window.location.href = "/"}>
+									Go to Dashboard
+								</Button>
 							</div>
 						</div>
 					)}

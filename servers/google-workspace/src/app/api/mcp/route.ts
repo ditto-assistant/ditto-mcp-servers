@@ -63,7 +63,7 @@ export async function GET(_req: NextRequest): Promise<Response> {
 		drive: true,
 		home: false,
 	};
-	const mcpServer = createMCPServer(auth, services);
+	const mcpServer = createMCPServer(auth, services, config?.google);
 
 	// Build a transform stream that SSEServerTransport can write to.
 	const encoder = new TextEncoder();
