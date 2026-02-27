@@ -90,10 +90,9 @@ async function ensureDeviceModel(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      device_model_id: DEVICE_MODEL_ID,
-      project_id: projectId,
-      display_name: "Ditto MCP Assistant",
-      device_type: "action.devices.types.PHONE",
+      deviceModelId: DEVICE_MODEL_ID,
+      projectId,
+      deviceType: "action.devices.types.PHONE",
     }),
   });
 
