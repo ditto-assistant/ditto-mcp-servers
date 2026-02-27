@@ -60,7 +60,8 @@ const DEVICE_ID = "ditto-mcp-device";
 const ASSISTANT_API = "https://embeddedassistant.googleapis.com";
 
 // Cache per project so we only register once per server lifetime
-const registeredModels = new Map<string, string>(); // projectId → modelId
+const registeredModels = new Map<string, string>(); // projectNumber → modelId
+const resolvedProjectIds = new Map<string, string>(); // projectNumber → string projectId
 
 /**
  * Extract the GCP project number from an OAuth2 client ID.
@@ -69,6 +70,39 @@ const registeredModels = new Map<string, string>(); // projectId → modelId
 function extractProjectNumber(clientId: string): string | null {
   const match = clientId.match(/^(\d+)-/);
   return match ? match[1] : null;
+}
+
+/**
+ * Resolve a GCP project number to its string project ID using the
+ * Cloud Resource Manager API. The device registration API requires
+ * the string ID (e.g. "homeassistant-436204"), not the numeric ID.
+ */
+async function resolveProjectId(
+  token: string,
+  projectNumber: string,
+): Promise<string> {
+  const cached = resolvedProjectIds.get(projectNumber);
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(
+      `https://cloudresourcemanager.googleapis.com/v1/projects/${projectNumber}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const projectId: string = data.projectId ?? projectNumber;
+      console.log(`[assistant] resolved project ${projectNumber} → ${projectId}`);
+      resolvedProjectIds.set(projectNumber, projectId);
+      return projectId;
+    }
+    console.warn(`[assistant] could not resolve project ID (${res.status}), using number`);
+  } catch (e) {
+    console.warn(`[assistant] project ID resolution failed: ${e}`);
+  }
+
+  resolvedProjectIds.set(projectNumber, projectNumber);
+  return projectNumber;
 }
 
 /**
@@ -83,9 +117,12 @@ async function ensureDeviceModel(
   const cached = registeredModels.get(projectId);
   if (cached) return cached;
 
-  // Model ID must be globally unique — prefix with project number
-  const modelId = `${projectId}-ditto-mcp`;
-  const baseUrl = `${ASSISTANT_API}/v1alpha2/projects/${projectId}/deviceModels`;
+  // Resolve string project ID (e.g. "homeassistant-436204") from project number
+  const stringProjectId = await resolveProjectId(token, projectId);
+
+  // Model ID must be globally unique — prefix with string project ID
+  const modelId = `${stringProjectId}-ditto-mcp`;
+  const baseUrl = `${ASSISTANT_API}/v1alpha2/projects/${stringProjectId}/deviceModels`;
   const modelUrl = `${baseUrl}/${modelId}`;
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -93,16 +130,22 @@ async function ensureDeviceModel(
   };
   const payload = {
     device_model_id: modelId,
-    project_id: projectId,
+    project_id: stringProjectId,
     device_type: "action.devices.types.LIGHT",
   };
 
+  console.log(`[assistant] checking device model: GET ${modelUrl}`);
+
   // Check if model already exists
   const getRes = await fetch(modelUrl, { headers });
+  console.log(`[assistant] GET device model status: ${getRes.status}`);
   if (getRes.ok) {
     registeredModels.set(projectId, modelId);
     return modelId;
   }
+
+  console.log(`[assistant] creating device model: POST ${baseUrl}`);
+  console.log(`[assistant] payload: ${JSON.stringify(payload)}`);
 
   // Create it
   const postRes = await fetch(baseUrl, {
@@ -111,16 +154,17 @@ async function ensureDeviceModel(
     body: JSON.stringify(payload),
   });
 
+  const postBody = await postRes.text().catch(() => "");
+  console.log(`[assistant] POST device model status: ${postRes.status}`);
+  console.log(`[assistant] POST device model response: ${postBody}`);
+
   if (postRes.ok) {
     registeredModels.set(projectId, modelId);
     return modelId;
   }
 
-  // Log warning but fall back to the model ID anyway so the gRPC call runs
-  const body = await postRes.text().catch(() => "");
-  console.warn(
-    `[assistant] device model registration returned ${postRes.status}: ${body}`,
-  );
+  // Fall back to the model ID anyway so the gRPC call runs
+  console.warn(`[assistant] device model registration failed, proceeding anyway`);
   registeredModels.set(projectId, modelId);
   return modelId;
 }
