@@ -56,12 +56,11 @@ export interface AssistResult {
   response: string;
 }
 
-const DEVICE_MODEL_ID = "ditto-mcp-assistant";
 const DEVICE_ID = "ditto-mcp-device";
 const ASSISTANT_API = "https://embeddedassistant.googleapis.com";
 
-// Cache registered project IDs so we only register once per server lifetime
-const registeredProjects = new Set<string>();
+// Cache per project so we only register once per server lifetime
+const registeredModels = new Map<string, string>(); // projectId → modelId
 
 /**
  * Extract the GCP project number from an OAuth2 client ID.
@@ -73,52 +72,57 @@ function extractProjectNumber(clientId: string): string | null {
 }
 
 /**
- * Register a device model in the user's GCP project via the Device Registration REST API.
- * Safe to call multiple times — a 409 (already exists) is treated as success.
+ * Ensure a device model is registered in the user's GCP project.
+ * Uses GET-first to avoid duplicate registration errors.
+ * Returns the model ID to use in gRPC calls.
  */
 async function ensureDeviceModel(
   token: string,
   projectId: string,
-): Promise<void> {
-  if (registeredProjects.has(projectId)) return;
+): Promise<string> {
+  const cached = registeredModels.get(projectId);
+  if (cached) return cached;
 
-  const url = `${ASSISTANT_API}/v1alpha2/projects/${projectId}/deviceModels`;
-  const res = await fetch(url, {
+  // Model ID must be globally unique — prefix with project number
+  const modelId = `${projectId}-ditto-mcp`;
+  const baseUrl = `${ASSISTANT_API}/v1alpha2/projects/${projectId}/deviceModels`;
+  const modelUrl = `${baseUrl}/${modelId}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+  const payload = {
+    device_model_id: modelId,
+    project_id: projectId,
+    device_type: "action.devices.types.LIGHT",
+  };
+
+  // Check if model already exists
+  const getRes = await fetch(modelUrl, { headers });
+  if (getRes.ok) {
+    registeredModels.set(projectId, modelId);
+    return modelId;
+  }
+
+  // Create it
+  const postRes = await fetch(baseUrl, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      deviceModelId: DEVICE_MODEL_ID,
-      projectId,
-      deviceType: "action.devices.types.PHONE",
-    }),
+    headers,
+    body: JSON.stringify(payload),
   });
 
-  // 200 = created, 409 = already exists — both are fine
-  if (res.ok || res.status === 409) {
-    registeredProjects.add(projectId);
-    return;
+  if (postRes.ok) {
+    registeredModels.set(projectId, modelId);
+    return modelId;
   }
 
-  // Try to list existing models and use the first one
-  const listRes = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (listRes.ok) {
-    const data = await listRes.json();
-    if (Array.isArray(data.deviceModels) && data.deviceModels.length > 0) {
-      registeredProjects.add(projectId);
-      return;
-    }
-  }
-
-  // Log but don't throw — the gRPC call will surface any real error
-  const body = await res.text().catch(() => "");
+  // Log warning but fall back to the model ID anyway so the gRPC call runs
+  const body = await postRes.text().catch(() => "");
   console.warn(
-    `[assistant] device model registration returned ${res.status}: ${body}`,
+    `[assistant] device model registration returned ${postRes.status}: ${body}`,
   );
+  registeredModels.set(projectId, modelId);
+  return modelId;
 }
 
 /**
@@ -139,10 +143,11 @@ export async function sendAssistantCommand(
   if (!token) throw new Error("Failed to obtain access token");
 
   // Auto-register device model so Google accepts the gRPC request
+  let deviceModelId = "ditto-mcp-assistant"; // fallback if no client ID
   if (oauthClientId) {
     const projectId = extractProjectNumber(oauthClientId);
     if (projectId) {
-      await ensureDeviceModel(token, projectId);
+      deviceModelId = await ensureDeviceModel(token, projectId);
     }
   }
 
@@ -196,7 +201,7 @@ export async function sendAssistantCommand(
         },
         device_config: {
           device_id: DEVICE_ID,
-          device_model_id: DEVICE_MODEL_ID,
+          device_model_id: deviceModelId,
         },
         screen_out_config: {
           screen_mode: "PLAYING",
