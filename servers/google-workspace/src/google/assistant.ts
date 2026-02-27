@@ -60,49 +60,16 @@ const DEVICE_ID = "ditto-mcp-device";
 const ASSISTANT_API = "https://embeddedassistant.googleapis.com";
 
 // Cache per project so we only register once per server lifetime
-const registeredModels = new Map<string, string>(); // projectNumber → modelId
-const resolvedProjectIds = new Map<string, string>(); // projectNumber → string projectId
+const registeredModels = new Map<string, string>(); // projectId → modelId
 
 /**
  * Extract the GCP project number from an OAuth2 client ID.
  * Client IDs have the format: {project_number}-{hash}.apps.googleusercontent.com
+ * Used as a fallback when the user hasn't configured their string project ID.
  */
 function extractProjectNumber(clientId: string): string | null {
   const match = clientId.match(/^(\d+)-/);
   return match ? match[1] : null;
-}
-
-/**
- * Resolve a GCP project number to its string project ID using the
- * Cloud Resource Manager API. The device registration API requires
- * the string ID (e.g. "homeassistant-436204"), not the numeric ID.
- */
-async function resolveProjectId(
-  token: string,
-  projectNumber: string,
-): Promise<string> {
-  const cached = resolvedProjectIds.get(projectNumber);
-  if (cached) return cached;
-
-  try {
-    const res = await fetch(
-      `https://cloudresourcemanager.googleapis.com/v1/projects/${projectNumber}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-    if (res.ok) {
-      const data = await res.json();
-      const projectId: string = data.projectId ?? projectNumber;
-      console.log(`[assistant] resolved project ${projectNumber} → ${projectId}`);
-      resolvedProjectIds.set(projectNumber, projectId);
-      return projectId;
-    }
-    console.warn(`[assistant] could not resolve project ID (${res.status}), using number`);
-  } catch (e) {
-    console.warn(`[assistant] project ID resolution failed: ${e}`);
-  }
-
-  resolvedProjectIds.set(projectNumber, projectNumber);
-  return projectNumber;
 }
 
 /**
@@ -117,12 +84,9 @@ async function ensureDeviceModel(
   const cached = registeredModels.get(projectId);
   if (cached) return cached;
 
-  // Resolve string project ID (e.g. "homeassistant-436204") from project number
-  const stringProjectId = await resolveProjectId(token, projectId);
-
-  // Model ID must be globally unique — prefix with string project ID
-  const modelId = `${stringProjectId}-ditto-mcp`;
-  const baseUrl = `${ASSISTANT_API}/v1alpha2/projects/${stringProjectId}/deviceModels`;
+  // Model ID must be globally unique — prefix with project ID
+  const modelId = `${projectId}-ditto-mcp`;
+  const baseUrl = `${ASSISTANT_API}/v1alpha2/projects/${projectId}/deviceModels`;
   const modelUrl = `${baseUrl}/${modelId}`;
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -130,7 +94,7 @@ async function ensureDeviceModel(
   };
   const payload = {
     device_model_id: modelId,
-    project_id: stringProjectId,
+    project_id: projectId,
     device_type: "action.devices.types.LIGHT",
   };
 
@@ -174,25 +138,25 @@ async function ensureDeviceModel(
  * Works with any device in your Google Home — lights, switches, plugs,
  * thermostats, etc. — just like speaking to a Google Home speaker.
  *
- * @param auth        Authenticated OAuth2 client
- * @param command     Natural language command, e.g. "turn on the bedroom lights"
- * @param oauthClientId  OAuth2 client ID from config (used to derive GCP project number)
+ * @param auth           Authenticated OAuth2 client
+ * @param command        Natural language command, e.g. "turn on the bedroom lights"
+ * @param oauthClientId  OAuth2 client ID (used to extract project number as fallback)
+ * @param gcpProjectId   GCP string project ID (e.g. "homeassistant-436204") — preferred
  */
 export async function sendAssistantCommand(
   auth: Auth.OAuth2Client,
   command: string,
   oauthClientId?: string,
+  gcpProjectId?: string,
 ): Promise<AssistResult> {
   const { token } = await auth.getAccessToken();
   if (!token) throw new Error("Failed to obtain access token");
 
-  // Auto-register device model so Google accepts the gRPC request
-  let deviceModelId = "ditto-mcp-assistant"; // fallback if no client ID
-  if (oauthClientId) {
-    const projectId = extractProjectNumber(oauthClientId);
-    if (projectId) {
-      deviceModelId = await ensureDeviceModel(token, projectId);
-    }
+  // Determine the project ID to use for device model registration
+  let deviceModelId = "ditto-mcp-assistant"; // last-resort fallback
+  const projectId = gcpProjectId?.trim() || extractProjectNumber(oauthClientId ?? "");
+  if (projectId) {
+    deviceModelId = await ensureDeviceModel(token, projectId);
   }
 
   const sslCreds = grpc.credentials.createSsl();

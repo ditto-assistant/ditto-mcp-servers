@@ -51,6 +51,7 @@ export async function GET() {
 				drive: true,
 				home: true,
 			},
+		gcpProjectId: config?.gcpProjectId ?? "",
 			google: {
 				authenticated: !!tokens?.refresh_token,
 				email: "",

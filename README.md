@@ -82,6 +82,7 @@ One server, one OAuth flow, one ngrok tunnel. Covers Google Workspace **and** Go
 4. **Credentials → Create Credentials → OAuth 2.0 Client ID** → Web application
    - Authorized redirect URI: `http://localhost:3100/api/google/callback`
 5. Paste **Client ID** and **Client Secret** into the wizard
+6. For Google Home: note your GCP **project ID string** (e.g. `my-project-123456`) — enter it in the Home card on the dashboard after setup
 
 **Step 2 — Sign in with Google** — one consent screen grants access to everything you enabled
 

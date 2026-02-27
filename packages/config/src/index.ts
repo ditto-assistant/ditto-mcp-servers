@@ -21,6 +21,7 @@ export interface GoogleWorkspaceConfig {
 		drive: boolean;
 		home: boolean;
 	};
+	gcpProjectId?: string;
 	server: {
 		port: number;
 	};

@@ -23,6 +23,7 @@ export function createMCPServer(
 	googleAuth: Auth.OAuth2Client,
 	services: GoogleWorkspaceConfig["services"],
 	googleConfig?: GoogleWorkspaceConfig["google"],
+	gcpProjectId?: string,
 ): McpServer {
 	const server = new McpServer({
 		name: "ditto-google",
@@ -66,7 +67,7 @@ export function createMCPServer(
 	if (services.docs) registerDocsTools(server, getDocs);
 	if (services.sheets) registerSheetsTools(server, getSheets);
 	if (services.drive) registerDriveTools(server, getDrive);
-	if (services.home) registerHomeTools(server, () => googleAuth, googleConfig?.clientId);
+	if (services.home) registerHomeTools(server, () => googleAuth, googleConfig?.clientId, gcpProjectId);
 
 	return server;
 }
