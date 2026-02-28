@@ -148,17 +148,20 @@ async function ensureDeviceModel(
  * @param oauthClientId  OAuth2 client ID (used to extract project number as fallback)
  * @param gcpProjectId   GCP string project ID (e.g. "homeassistant-436204") — preferred
  */
+const GRPC_TIMEOUT_MS = 15_000;
+
 export async function sendAssistantCommand(
   auth: Auth.OAuth2Client,
   command: string,
   oauthClientId?: string,
   gcpProjectId?: string,
 ): Promise<AssistResult> {
+  console.log(`[assistant] command: "${command}"`);
+
   const { token } = await auth.getAccessToken();
   if (!token) throw new Error("Failed to obtain access token");
 
-  // Determine the project ID to use for device model registration
-  let deviceModelId = "ditto-mcp-assistant"; // last-resort fallback
+  let deviceModelId = "ditto-mcp-assistant";
   const projectId = gcpProjectId?.trim() || extractProjectNumber(oauthClientId ?? "");
   if (projectId) {
     deviceModelId = await ensureDeviceModel(token, projectId);
@@ -176,28 +179,58 @@ export async function sendAssistantCommand(
   const client = new AssistantProto("embeddedassistant.googleapis.com:443", creds);
 
   return new Promise<AssistResult>((resolve, reject) => {
+    let settled = false;
+    const settle = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      fn();
+    };
+
+    const timer = setTimeout(() => {
+      settle(() => {
+        console.error(`[assistant] gRPC call timed out after ${GRPC_TIMEOUT_MS}ms`);
+        call.cancel();
+        reject(new Error(`Google Assistant gRPC call timed out after ${GRPC_TIMEOUT_MS / 1000}s — the Embedded Assistant API may not be responding for this project.`));
+      });
+    }, GRPC_TIMEOUT_MS);
+
     const call = client.Assist();
     let responseText = "";
 
     call.on("data", (response: Record<string, unknown>) => {
-      const out = response.dialog_state_out as
-        | Record<string, unknown>
-        | undefined;
-      if (out?.supplemental_display_text) {
-        responseText = out.supplemental_display_text as string;
+      const dialogOut = response.dialog_state_out as Record<string, unknown> | undefined;
+      const deviceAction = response.device_action as Record<string, unknown> | undefined;
+
+      if (dialogOut?.supplemental_display_text) {
+        responseText = dialogOut.supplemental_display_text as string;
+      }
+      if (deviceAction?.device_request_json) {
+        console.log("[assistant] device action:", deviceAction.device_request_json);
+      }
+    });
+
+    call.on("status", (status: grpc.StatusObject) => {
+      if (status.code !== grpc.status.OK && !settled) {
+        console.error(`[assistant] gRPC error: code=${status.code} details="${status.details}"`);
+        settle(() => reject(new Error(`Google Assistant gRPC error (code ${status.code}): ${status.details}`)));
       }
     });
 
     call.on("end", () => {
-      resolve({
-        success: true,
-        command,
-        response: responseText || "Command sent to Google Home.",
-      });
+      console.log(`[assistant] command complete: "${command}" → "${responseText || "(no text response)"}"`);
+      settle(() =>
+        resolve({
+          success: true,
+          command,
+          response: responseText || "Command sent to Google Home.",
+        }),
+      );
     });
 
-    call.on("error", (err: Error) => {
-      reject(new Error(`Google Assistant error: ${err.message}`));
+    call.on("error", (err: Error & { code?: number; details?: string }) => {
+      console.error(`[assistant] gRPC error: code=${err.code} message="${err.message}"`);
+      settle(() => reject(new Error(`Google Assistant error: ${err.message}`)));
     });
 
     call.write({
@@ -221,7 +254,6 @@ export async function sendAssistantCommand(
         },
       },
     });
-
     call.end();
   });
 }

@@ -1,5 +1,5 @@
-// Minimal proto for Google Assistant Embedded API v1alpha2
-// Source: https://github.com/googleapis/googleapis/blob/master/google/assistant/embedded/v1alpha2/embedded_assistant.proto
+// Google Assistant Embedded API v1alpha2
+// Field numbers must match https://github.com/googleapis/googleapis/blob/master/google/assistant/embedded/v1alpha2/embedded_assistant.proto
 syntax = "proto3";
 
 package google.assistant.embedded.v1alpha2;
@@ -15,15 +15,34 @@ message AssistRequest {
   }
 }
 
+message AssistResponse {
+  enum EventType {
+    EVENT_TYPE_UNSPECIFIED = 0;
+    END_OF_UTTERANCE = 1;
+  }
+  EventType event_type = 1;
+  repeated SpeechRecognitionResult speech_results = 2;
+  AudioOut audio_out = 3;
+  ScreenOut screen_out = 4;
+  DialogStateOut dialog_state_out = 5;
+  DeviceAction device_action = 6;
+  DebugInfo debug_info = 8;
+}
+
+message DebugInfo {
+  string aog_agent_to_assistant_json = 1;
+}
+
 message AssistConfig {
   oneof type {
     AudioInConfig audio_in_config = 1;
     string text_query = 6;
   }
   AudioOutConfig audio_out_config = 2;
+  DialogStateIn dialog_state_in = 3;
+  DeviceConfig device_config = 4;
+  DebugConfig debug_config = 5;
   ScreenOutConfig screen_out_config = 8;
-  DialogStateIn dialog_state_in = 5;
-  DeviceConfig device_config = 7;
 }
 
 message AudioInConfig {
@@ -58,9 +77,10 @@ message ScreenOutConfig {
 }
 
 message DialogStateIn {
-  string language_code = 1;
-  bytes conversation_state = 2;
-  bool is_new_conversation = 5;
+  bytes conversation_state = 1;
+  string language_code = 2;
+  DeviceLocation device_location = 5;
+  bool is_new_conversation = 7;
 }
 
 message DeviceConfig {
@@ -68,22 +88,8 @@ message DeviceConfig {
   string device_model_id = 3;
 }
 
-message AssistResponse {
-  enum EventType {
-    EVENT_TYPE_UNSPECIFIED = 0;
-    END_OF_UTTERANCE = 1;
-  }
-  EventType event_type = 1;
-  AudioOut audio_out = 3;
-  ScreenOut screen_out = 4;
-  DeviceAction device_action = 6;
-  SpeechRecognitionResult speech_results = 2;
-  DialogStateOut dialog_state_out = 5;
-}
-
 message AudioOut {
   bytes audio_data = 1;
-  int32 volume_percentage = 5;
 }
 
 message ScreenOut {
@@ -105,7 +111,8 @@ message SpeechRecognitionResult {
 }
 
 message DialogStateOut {
-  bytes conversation_state = 1;
+  string supplemental_display_text = 1;
+  bytes conversation_state = 2;
   enum MicrophoneMode {
     MICROPHONE_MODE_UNSPECIFIED = 0;
     CLOSE_MICROPHONE = 1;
@@ -113,5 +120,19 @@ message DialogStateOut {
   }
   MicrophoneMode microphone_mode = 3;
   int32 volume_percentage = 4;
-  string supplemental_display_text = 7;
+}
+
+message DebugConfig {
+  bool return_debug_info = 6;
+}
+
+message DeviceLocation {
+  oneof type {
+    LatLng coordinates = 1;
+  }
+}
+
+message LatLng {
+  double latitude = 1;
+  double longitude = 2;
 }

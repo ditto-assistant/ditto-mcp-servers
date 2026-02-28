@@ -1,7 +1,18 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Auth } from "googleapis";
-import { sendAssistantCommand } from "@/google/assistant";
+
+// Lazy-load assistant so gRPC/proto is only loaded when a home tool runs,
+// not during list_tools (avoids blocking/failing when Ditto App backend connects).
+async function sendAssistantCommand(
+  auth: Auth.OAuth2Client,
+  command: string,
+  oauthClientId?: string,
+  gcpProjectId?: string,
+) {
+  const { sendAssistantCommand: impl } = await import("@/google/assistant");
+  return impl(auth, command, oauthClientId, gcpProjectId);
+}
 
 export function registerHomeTools(
   server: McpServer,
