@@ -21,6 +21,7 @@ const DEFAULT_CONFIG: GoogleWorkspaceConfig = {
 		docs: true,
 		sheets: true,
 		drive: true,
+		home: true,
 	},
 	server: {
 		port: 3100,
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
 			ngrok: { ...existing.ngrok, ...patch.ngrok },
 			services: { ...existing.services, ...patch.services },
 			server: { ...existing.server, ...patch.server },
+			gcpProjectId: patch.gcpProjectId ?? existing.gcpProjectId,
 		};
 
 		await store.save(CONFIG_FILE, merged);

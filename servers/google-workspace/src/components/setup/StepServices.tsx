@@ -7,6 +7,7 @@ import {
 	FileText,
 	Table2,
 	HardDrive,
+	Home,
 	ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ interface StepServicesProps {
 }
 
 interface ServiceDef {
-	key: "gmail" | "calendar" | "docs" | "sheets" | "drive";
+	key: "gmail" | "calendar" | "docs" | "sheets" | "drive" | "home";
 	label: string;
 	description: string;
 	icon: React.ComponentType<{ className?: string }>;
@@ -62,6 +63,12 @@ const SERVICES: ServiceDef[] = [
 		description: "Search, upload, and manage files",
 		icon: HardDrive,
 	},
+	{
+		key: "home",
+		label: "Google Home",
+		description: "Control smart home devices via Google Assistant (lights, thermostat, plugs, etc.)",
+		icon: Home,
+	},
 ];
 
 export function StepServices({ saveConfig, onNext }: StepServicesProps) {
@@ -71,6 +78,7 @@ export function StepServices({ saveConfig, onNext }: StepServicesProps) {
 		docs: true,
 		sheets: true,
 		drive: true,
+		home: true,
 	});
 	const [error, setError] = useState("");
 	const [saving, setSaving] = useState(false);

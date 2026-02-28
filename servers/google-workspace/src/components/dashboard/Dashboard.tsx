@@ -5,6 +5,7 @@ import { ConnectionStatus } from "./ConnectionStatus";
 import { ServiceToggles } from "./ServiceToggles";
 import { ActivityLog } from "./ActivityLog";
 import { GoogleAccountInfo } from "./GoogleAccountInfo";
+import { HomeSettings } from "./HomeSettings";
 
 export interface StatusData {
 	connected: boolean;
@@ -17,7 +18,9 @@ export interface StatusData {
 		docs: boolean;
 		sheets: boolean;
 		drive: boolean;
+		home: boolean;
 	};
+	gcpProjectId?: string;
 	google: {
 		authenticated: boolean;
 		email: string;
@@ -115,6 +118,9 @@ export function Dashboard() {
 					email={status.google.email}
 					expiryDate={status.google.expiryDate}
 				/>
+				{status.services.home && (
+					<HomeSettings gcpProjectId={status.gcpProjectId} />
+				)}
 			</div>
 		</div>
 	);

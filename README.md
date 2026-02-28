@@ -4,9 +4,9 @@ Open-source [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) ser
 
 ## Supported Servers
 
-| Server | Services | Status |
-|--------|----------|--------|
-| **Google Workspace** | Gmail, Calendar, Docs, Sheets, Drive | ✅ Available |
+| Server | Services | Port | Status |
+|--------|----------|------|--------|
+| **Google** | Gmail, Calendar, Docs, Sheets, Drive + Google Home (lights, thermostat, etc.) | 3100 | ✅ Available |
 
 ---
 
@@ -14,7 +14,7 @@ Open-source [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) ser
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Your Machine (Home Server)                 │
+│  Your Machine                               │
 │                                             │
 │  ┌───────────────────────────────────────┐  │
 │  │  Next.js App (localhost:3100)         │  │
@@ -28,13 +28,13 @@ Open-source [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) ser
 │  └──────────┬──────────┘                    │
 └─────────────┼───────────────────────────────┘
               │
-     ┌────────▼────────┐     ┌────────────────┐
-     │  Ditto Backend  │◄───►│  Google APIs   │
-     │  api.heyditto.ai│     └────────────────┘
-     └─────────────────┘
+     ┌────────▼────────┐     ┌────────────────────────┐
+     │  Ditto Backend  │◄───►│  Google APIs +         │
+     │  api.heyditto.ai│     │  Google Assistant gRPC │
+     └─────────────────┘     └────────────────────────┘
 ```
 
-The MCP endpoint (`/api/mcp`) is protected by a **bearer token** that is auto-generated on first run and displayed in the dashboard. Ditto connects through the ngrok tunnel using that token.
+The MCP endpoint (`/api/mcp`) is protected by a **bearer token** auto-generated on first run and shown in the dashboard. Ditto connects through the ngrok tunnel using that token.
 
 ---
 
@@ -44,7 +44,7 @@ The MCP endpoint (`/api/mcp`) is protected by a **bearer token** that is auto-ge
 
 - **Node.js** 20+
 - **pnpm** — `npm install -g pnpm`
-- **ngrok account** — [sign up free](https://dashboard.ngrok.com/signup), grab your auth token from [dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken)
+- **ngrok account** — [sign up free](https://dashboard.ngrok.com/signup)
 - **Google Cloud project** with OAuth credentials (see below)
 - **Ditto account** — [heyditto.ai](https://heyditto.ai)
 
@@ -66,124 +66,74 @@ Open **http://localhost:3100** — the setup wizard will guide you through the r
 
 ---
 
-## Setup Wizard
+## Google Server (port 3100)
 
-### Step 1 — Google OAuth Credentials
+One server, one OAuth flow, one ngrok tunnel. Covers Google Workspace **and** Google Home.
 
-You need a Google Cloud OAuth client to let the server call Gmail, Calendar, Docs, Sheets, and Drive on your behalf.
+### Setup Steps
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/) → create or select a project
-2. Enable these APIs (**APIs & Services → Library**):
-   - Gmail API
-   - Google Calendar API
-   - Google Docs API
-   - Google Sheets API
-   - Google Drive API
-3. Go to **APIs & Services → OAuth consent screen**
-   - User type: External
-   - Add your Google email as a **test user**
-4. Go to **APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID**
-   - Application type: **Web application**
+**Step 1 — Google OAuth Credentials**
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → create or select a project
+2. Enable the APIs you want (**APIs & Services → Library**):
+   - Gmail API, Google Calendar API, Google Docs API, Google Sheets API, Google Drive API
+   - **Google Assistant API** (for Google Home control)
+3. **OAuth consent screen** → External → add your email as a test user → add the scope `https://www.googleapis.com/auth/assistant-sdk-prototype`
+4. **Credentials → Create Credentials → OAuth 2.0 Client ID** → Web application
    - Authorized redirect URI: `http://localhost:3100/api/google/callback`
-5. Copy the **Client ID** and **Client Secret** into the wizard
+5. Paste **Client ID** and **Client Secret** into the wizard
+6. For Google Home: note your GCP **project ID string** (e.g. `my-project-123456`) — enter it in the Home card on the dashboard after setup
 
-### Step 2 — Sign in with Google
+**Step 2 — Sign in with Google** — one consent screen grants access to everything you enabled
 
-Click **Sign in with Google** to authorize the server to access your Google Workspace.
+**Step 3 — ngrok Token** — paste your [ngrok auth token](https://dashboard.ngrok.com/get-started/your-authtoken)
 
-### Step 3 — ngrok Token
+**Step 4 — Services** — toggle on/off: Gmail, Calendar, Docs, Sheets, Drive, **Google Home**
 
-Paste your ngrok auth token. This creates a public HTTPS tunnel so Ditto's backend can reach your local server.
+**Step 5 — Launch** — click **Start Server** to open the tunnel
 
-Optionally enter a **reserved domain** (e.g. `my-ditto.ngrok-free.app`) for a stable URL that survives restarts. You can reserve one for free at [dashboard.ngrok.com/domains](https://dashboard.ngrok.com/domains).
+### Available Tools (29)
 
-### Step 4 — Choose Services
+| Category | Tools |
+|----------|-------|
+| Gmail | `gmail_search`, `gmail_read`, `gmail_send`, `gmail_draft`, `gmail_list_labels` |
+| Calendar | `calendar_list_events`, `calendar_create_event`, `calendar_update_event`, `calendar_delete_event`, `calendar_search_events` |
+| Docs | `docs_create`, `docs_read`, `docs_update`, `docs_search` |
+| Sheets | `sheets_create`, `sheets_read`, `sheets_update`, `sheets_search` |
+| Drive | `drive_list`, `drive_search`, `drive_upload`, `drive_download` |
+| Google Home | `home_send_command`, `home_turn_on`, `home_turn_off`, `home_set_brightness`, `home_set_color`, `home_set_thermostat`, `home_query` |
 
-Toggle on/off Gmail, Calendar, Docs, Sheets, and Drive.
-
-### Step 5 — Launch
-
-Click **Start Server** to open the ngrok tunnel. You'll see the live tunnel URL.
+**Google Home example commands:**
+- "turn on the bedroom lights"
+- "set the kitchen lights to 40%"
+- "turn off all lights"
+- "set the thermostat to 70 degrees"
+- "is the living room light on?"
 
 ---
 
 ## Connecting to Ditto
 
-After launching, go to the **Dashboard** (http://localhost:3100):
+After launching, go to the dashboard (http://localhost:3100):
 
-1. Click **Restart Tunnel** if the connection shows as Disconnected
-2. Copy the **ngrok URL** (e.g. `https://xxxx.ngrok-free.app`)
-3. Click the **copy icon** next to "Bearer token for Ditto" to copy your auth token
+1. Copy the **ngrok URL** (e.g. `https://xxxx.ngrok-free.app`)
+2. Copy the **Bearer Token** from the Connection card
 
-Then in the Ditto App:
+Then in the Ditto App — **Settings → MCP Servers → Add Server**:
 
-1. **Settings → MCP Servers → Add Server**
-2. Fill in:
-   | Field | Value |
-   |-------|-------|
-   | Name | `Google Workspace` (or anything) |
-   | URL | `https://xxxx.ngrok-free.app/api/mcp` |
-   | Auth | Bearer → paste the token |
-3. Save and **enable** the server
-4. Expand the server row to confirm tools load successfully
+| Field | Value |
+|-------|-------|
+| Name | `Google` |
+| URL | `https://xxxx.ngrok-free.app/api/mcp` |
+| Auth | Bearer → paste the token |
 
-Ditto now has access to 22 Google Workspace tools.
-
----
-
-## Available Tools (22)
-
-### Gmail (5)
-| Tool | Description |
-|------|-------------|
-| `gmail_search` | Search emails with Gmail query syntax |
-| `gmail_read` | Read a specific email by ID |
-| `gmail_send` | Compose and send an email |
-| `gmail_draft` | Create a draft email |
-| `gmail_list_labels` | List all Gmail labels |
-
-### Calendar (5)
-| Tool | Description |
-|------|-------------|
-| `calendar_list_events` | List upcoming events |
-| `calendar_create_event` | Create a new event |
-| `calendar_update_event` | Update an existing event |
-| `calendar_delete_event` | Delete an event |
-| `calendar_search_events` | Search events by keyword |
-
-### Docs (4)
-| Tool | Description |
-|------|-------------|
-| `docs_create` | Create a new Google Doc |
-| `docs_read` | Read document content |
-| `docs_update` | Update document content |
-| `docs_search` | Search for documents |
-
-### Sheets (4)
-| Tool | Description |
-|------|-------------|
-| `sheets_create` | Create a new spreadsheet |
-| `sheets_read` | Read spreadsheet data |
-| `sheets_update` | Update spreadsheet cells |
-| `sheets_search` | Search for spreadsheets |
-
-### Drive (4)
-| Tool | Description |
-|------|-------------|
-| `drive_list` | List files in a folder |
-| `drive_search` | Search files |
-| `drive_upload` | Upload a file |
-| `drive_download` | Download a file |
+Save, enable, and confirm tools load.
 
 ---
 
 ## Keeping It Running
 
-The server must be running on your machine for Ditto to use your Google Workspace tools.
-
-**Restart after reboot:** Run `pnpm dev` again from the project directory. The ngrok tunnel will reconnect automatically (click "Restart Tunnel" in the dashboard if needed). All credentials are saved in `~/.ditto-mcp-servers/google-workspace/` so you won't need to redo setup.
-
-**Reserved domain (optional):** If you reserved a free ngrok domain, the tunnel URL stays the same across restarts — you only need to register the MCP server in Ditto once.
+The server must be running locally for Ditto to use its tools. Run `pnpm dev` again after a reboot. All credentials are saved in `~/.ditto-mcp-servers/google-workspace/` so setup only needs to be done once. A reserved ngrok domain keeps the URL stable across restarts.
 
 ---
 
@@ -191,30 +141,26 @@ The server must be running on your machine for Ditto to use your Google Workspac
 
 ```
 ditto-mcp-servers/
-├── .npmrc                    # pnpm hoist config for native modules
+├── .npmrc                    # pnpm hoist config for @ngrok/* and @grpc/* native modules
 ├── packages/
 │   ├── config/               # Config persistence (~/.ditto-mcp-servers/)
-│   ├── tunnel/               # ngrok tunnel management
-│   └── ditto-client/         # Ditto backend API client
+│   └── tunnel/               # ngrok tunnel management
 └── servers/
-    └── google-workspace/     # Google Workspace MCP server (port 3100)
-        ├── src/app/          # Next.js pages + API routes
-        │   ├── api/mcp/      # MCP SSE endpoint (bearer-token protected)
-        │   ├── api/status/   # Status + tunnel start/stop
-        │   └── api/config/   # Config read/write
-        ├── src/mcp/          # MCP server + 22 tool definitions
-        ├── src/google/       # Google API wrappers
+    └── google-workspace/     # Google MCP server (port 3100)
+        ├── proto/            # Google Assistant Embedded gRPC proto
+        ├── src/app/api/      # MCP SSE, config, status, OAuth routes
+        ├── src/mcp/          # MCP server + 29 tool definitions
+        ├── src/google/       # Google API clients + Assistant gRPC client
         └── src/components/   # Setup wizard + dashboard UI
 ```
 
-Config and credentials are stored locally at:
+Credentials stored at:
 ```
-~/.ditto-mcp-servers/
-└── google-workspace/
-    ├── config.json    # OAuth client ID/secret, ngrok token, service toggles
-    ├── tokens.json    # Google OAuth tokens (refresh token)
-    ├── state.json     # Active tunnel URL
-    └── auth.json      # Bearer token for Ditto auth
+~/.ditto-mcp-servers/google-workspace/
+├── config.json    # OAuth creds, ngrok token, service toggles
+├── tokens.json    # Google OAuth refresh token
+├── state.json     # Active tunnel URL
+└── auth.json      # Bearer token for Ditto
 ```
 
 ---
@@ -222,21 +168,12 @@ Config and credentials are stored locally at:
 ## Development
 
 ```bash
-pnpm install     # Install all dependencies
-pnpm dev         # Start Google Workspace server on :3100
-pnpm build       # Build all packages
-pnpm lint        # Lint with Biome
-pnpm format      # Format with Biome
+pnpm install    # Install all dependencies
+pnpm dev        # Start server on :3100
+pnpm build      # Build all packages
+pnpm lint       # Lint with Biome
+pnpm format     # Format with Biome
 ```
-
-## Adding a New MCP Server
-
-1. Create a new directory under `servers/`
-2. Scaffold a Next.js app
-3. Implement MCP tools in `src/mcp/tools/`
-4. Expose the SSE endpoint at `/api/mcp` with bearer token auth
-5. Reuse `@ditto-mcp/config`, `@ditto-mcp/tunnel` shared packages
-6. Include a setup wizard + dashboard GUI
 
 ## Contributing
 

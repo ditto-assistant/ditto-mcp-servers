@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { createMCPServer } from "@/mcp/server";
-import { getAuthenticatedClient } from "@/google/auth";
+import { getAuthenticatedClient, loadConfig } from "@/google/auth";
 import { createConfigStore } from "@ditto-mcp/config";
 
 export const dynamic = "force-dynamic";
@@ -53,8 +53,17 @@ export async function GET(_req: NextRequest): Promise<Response> {
 		);
 	}
 
-	// Create the MCP server with the authenticated Google client
-	const mcpServer = createMCPServer(auth);
+	// Create the MCP server with the authenticated Google client and enabled services
+	const config = await loadConfig();
+	const services = config?.services ?? {
+		gmail: true,
+		calendar: true,
+		docs: true,
+		sheets: true,
+		drive: true,
+		home: false,
+	};
+	const mcpServer = createMCPServer(auth, services, config?.google, config?.gcpProjectId);
 
 	// Build a transform stream that SSEServerTransport can write to.
 	const encoder = new TextEncoder();

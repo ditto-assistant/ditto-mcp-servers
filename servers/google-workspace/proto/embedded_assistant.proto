@@ -1,0 +1,138 @@
+// Google Assistant Embedded API v1alpha2
+// Field numbers must match https://github.com/googleapis/googleapis/blob/master/google/assistant/embedded/v1alpha2/embedded_assistant.proto
+syntax = "proto3";
+
+package google.assistant.embedded.v1alpha2;
+
+service EmbeddedAssistant {
+  rpc Assist(stream AssistRequest) returns (stream AssistResponse) {}
+}
+
+message AssistRequest {
+  oneof type {
+    AssistConfig config = 1;
+    bytes audio_in = 2;
+  }
+}
+
+message AssistResponse {
+  enum EventType {
+    EVENT_TYPE_UNSPECIFIED = 0;
+    END_OF_UTTERANCE = 1;
+  }
+  EventType event_type = 1;
+  repeated SpeechRecognitionResult speech_results = 2;
+  AudioOut audio_out = 3;
+  ScreenOut screen_out = 4;
+  DialogStateOut dialog_state_out = 5;
+  DeviceAction device_action = 6;
+  DebugInfo debug_info = 8;
+}
+
+message DebugInfo {
+  string aog_agent_to_assistant_json = 1;
+}
+
+message AssistConfig {
+  oneof type {
+    AudioInConfig audio_in_config = 1;
+    string text_query = 6;
+  }
+  AudioOutConfig audio_out_config = 2;
+  DialogStateIn dialog_state_in = 3;
+  DeviceConfig device_config = 4;
+  DebugConfig debug_config = 5;
+  ScreenOutConfig screen_out_config = 8;
+}
+
+message AudioInConfig {
+  enum Encoding {
+    ENCODING_UNSPECIFIED = 0;
+    LINEAR16 = 1;
+    FLAC = 2;
+  }
+  Encoding encoding = 1;
+  int32 sample_rate_hertz = 2;
+}
+
+message AudioOutConfig {
+  enum Encoding {
+    ENCODING_UNSPECIFIED = 0;
+    LINEAR16 = 1;
+    MP3 = 2;
+    OPUS_IN_OGG = 3;
+  }
+  Encoding encoding = 1;
+  int32 sample_rate_hertz = 2;
+  int32 volume_percentage = 3;
+}
+
+message ScreenOutConfig {
+  enum ScreenMode {
+    SCREEN_MODE_UNSPECIFIED = 0;
+    OFF = 1;
+    PLAYING = 3;
+  }
+  ScreenMode screen_mode = 1;
+}
+
+message DialogStateIn {
+  bytes conversation_state = 1;
+  string language_code = 2;
+  DeviceLocation device_location = 5;
+  bool is_new_conversation = 7;
+}
+
+message DeviceConfig {
+  string device_id = 1;
+  string device_model_id = 3;
+}
+
+message AudioOut {
+  bytes audio_data = 1;
+}
+
+message ScreenOut {
+  enum Format {
+    FORMAT_UNSPECIFIED = 0;
+    HTML = 1;
+  }
+  Format format = 1;
+  bytes data = 2;
+}
+
+message DeviceAction {
+  string device_request_json = 1;
+}
+
+message SpeechRecognitionResult {
+  string transcript = 1;
+  float stability = 2;
+}
+
+message DialogStateOut {
+  string supplemental_display_text = 1;
+  bytes conversation_state = 2;
+  enum MicrophoneMode {
+    MICROPHONE_MODE_UNSPECIFIED = 0;
+    CLOSE_MICROPHONE = 1;
+    DIALOG_FOLLOW_ON = 2;
+  }
+  MicrophoneMode microphone_mode = 3;
+  int32 volume_percentage = 4;
+}
+
+message DebugConfig {
+  bool return_debug_info = 6;
+}
+
+message DeviceLocation {
+  oneof type {
+    LatLng coordinates = 1;
+  }
+}
+
+message LatLng {
+  double latitude = 1;
+  double longitude = 2;
+}

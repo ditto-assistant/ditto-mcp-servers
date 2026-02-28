@@ -30,9 +30,11 @@ export function ConnectionStatus({
 	const [copiedToken, setCopiedToken] = useState(false);
 	const [restarting, setRestarting] = useState(false);
 
+	const mcpUrl = tunnelUrl ? `${tunnelUrl}/api/mcp` : "";
+
 	const handleCopy = async () => {
-		if (!tunnelUrl) return;
-		const success = await copyToClipboard(tunnelUrl);
+		if (!mcpUrl) return;
+		const success = await copyToClipboard(mcpUrl);
 		if (success) {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
@@ -94,26 +96,29 @@ export function ConnectionStatus({
 			</CardHeader>
 			<CardContent>
 				<div className="flex flex-col gap-3">
-					{/* Tunnel URL */}
-					{tunnelUrl ? (
-						<div className="flex items-center gap-2">
-							<div className="flex-1 overflow-hidden rounded-md border border-border bg-background px-3 py-1.5">
-								<code className="text-xs text-accent font-mono truncate block">
-									{tunnelUrl}
-								</code>
+					{/* MCP URL */}
+					{mcpUrl ? (
+						<div className="flex flex-col gap-1">
+							<p className="text-xs text-muted-foreground">MCP endpoint for Ditto:</p>
+							<div className="flex items-center gap-2">
+								<div className="flex-1 overflow-hidden rounded-md border border-border bg-background px-3 py-1.5">
+									<code className="text-xs text-accent font-mono truncate block">
+										{mcpUrl}
+									</code>
+								</div>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={handleCopy}
+									className="shrink-0"
+								>
+									{copied ? (
+										<Check className="h-3.5 w-3.5 text-success" />
+									) : (
+										<Copy className="h-3.5 w-3.5" />
+									)}
+								</Button>
 							</div>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={handleCopy}
-								className="shrink-0"
-							>
-								{copied ? (
-									<Check className="h-3.5 w-3.5 text-success" />
-								) : (
-									<Copy className="h-3.5 w-3.5" />
-								)}
-							</Button>
 						</div>
 					) : (
 						<p className="text-xs text-muted-foreground">

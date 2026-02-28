@@ -19,7 +19,9 @@ export interface GoogleWorkspaceConfig {
 		docs: boolean;
 		sheets: boolean;
 		drive: boolean;
+		home: boolean;
 	};
+	gcpProjectId?: string;
 	server: {
 		port: number;
 	};
