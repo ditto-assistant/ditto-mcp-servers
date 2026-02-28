@@ -96,6 +96,11 @@ async function ensureDeviceModel(
     device_model_id: modelId,
     project_id: projectId,
     device_type: "action.devices.types.LIGHT",
+    manifest: {
+      manufacturer: "Ditto",
+      productName: "Ditto MCP Assistant",
+      deviceDescription: "Ditto MCP smart home controller",
+    },
   };
 
   console.log(`[assistant] checking device model: GET ${modelUrl}`);
